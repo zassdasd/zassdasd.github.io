@@ -1,0 +1,2036 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#2D5A4A">
+<meta name="application-name" content="资产一本帐">
+<meta name="apple-mobile-web-app-title" content="资产一本帐">
+<title>资产一本帐</title>
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap">
+<style>
+  /* ===== 设计变量 ===== */
+  :root {
+    --color-bg: #F7F5F0;
+    --color-surface: #FFFFFF;
+    --color-primary: #2D5A4A;
+    --color-primary-light: #3D7A64;
+    --color-accent: #D97706;
+    --color-accent-light: #F59E0B;
+    --color-text: #1F2937;
+    --color-text-secondary: #6B7280;
+    --color-text-tertiary: #9CA3AF;
+    --color-border: #E5E7EB;
+    --color-danger: #DC2626;
+    --color-success: #059669;
+    --color-warranty: #2563EB;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ===== 应用容器 ===== */
+  #app {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    max-width: 480px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  /* ===== 顶部导航 ===== */
+  .navbar {
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+
+  .navbar-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+
+  .navbar-action {
+    font-size: 14px;
+    color: var(--color-primary);
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 6px;
+    background: transparent;
+    border: none;
+    font-family: inherit;
+  }
+
+  .navbar-action:active {
+    background: rgba(45, 90, 74, 0.1);
+  }
+
+  .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 6px 8px;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    color: var(--color-primary);
+    font-size: 15px;
+  }
+
+  /* ===== 主内容区 ===== */
+  .main-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 80px;
+  }
+
+  /* ===== 统计概览卡片 ===== */
+  .stats-overview {
+    padding: 20px 16px 12px;
+  }
+
+  .stats-card {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+    border-radius: var(--radius-xl);
+    padding: 24px 20px;
+    color: white;
+    box-shadow: var(--shadow-md);
+  }
+
+  .stats-label {
+    font-size: 13px;
+    opacity: 0.8;
+    margin-bottom: 4px;
+  }
+
+  .stats-value {
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    margin-bottom: 16px;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+  }
+
+  .stat-item {
+    flex: 1;
+  }
+
+  .stat-item-label {
+    font-size: 12px;
+    opacity: 0.75;
+    margin-bottom: 2px;
+  }
+
+  .stat-item-value {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  /* ===== 筛选工具栏 ===== */
+  .filter-toolbar {
+    padding: 8px 16px 4px;
+  }
+
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-bottom: 8px;
+  }
+
+  .filter-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-tab {
+    flex-shrink: 0;
+    padding: 7px 14px;
+    border-radius: 18px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .filter-tab.active {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+  }
+
+  .sort-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0 8px;
+  }
+
+  .sort-label {
+    font-size: 12px;
+    color: var(--color-text-tertiary);
+  }
+
+  .sort-options {
+    display: flex;
+    gap: 6px;
+  }
+
+  .sort-btn {
+    padding: 5px 10px;
+    border-radius: 6px;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .sort-btn.active {
+    background: rgba(45, 90, 74, 0.08);
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  /* ===== 设备列表 ===== */
+  .device-list {
+    padding: 8px 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .device-card {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    display: flex;
+    gap: 14px;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    border: 1px solid var(--color-border);
+    position: relative;
+  }
+
+  .device-card:active {
+    transform: scale(0.98);
+    box-shadow: var(--shadow-md);
+  }
+
+  .device-card.long-pressed {
+    background: #FEF2F2;
+    border-color: var(--color-danger);
+  }
+
+  .device-thumb {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-md);
+    background: var(--color-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .device-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .device-thumb-placeholder {
+    width: 32px;
+    height: 32px;
+    opacity: 0.4;
+  }
+
+  .device-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .device-top-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .device-name-area {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .device-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 4px;
+  }
+
+  .device-category-badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(45, 90, 74, 0.1);
+    color: var(--color-primary);
+  }
+
+  .device-status {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+
+  .status-active {
+    background: rgba(5, 150, 105, 0.1);
+    color: var(--color-success);
+  }
+
+  .status-retired {
+    background: rgba(107, 114, 128, 0.1);
+    color: var(--color-text-secondary);
+  }
+
+  .device-bottom-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .cost-area {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .device-cost {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--color-accent);
+    line-height: 1.1;
+  }
+
+  .device-cost-label {
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    margin-top: 2px;
+  }
+
+  .days-area {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .device-days {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-text);
+    line-height: 1.1;
+  }
+
+  .device-days-label {
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    margin-top: 2px;
+  }
+
+  /* ===== 空状态 ===== */
+  .empty-state {
+    padding: 60px 32px;
+    text-align: center;
+  }
+
+  .empty-icon {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 16px;
+    opacity: 0.3;
+  }
+
+  .empty-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 8px;
+  }
+
+  .empty-desc {
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+
+  /* ===== 添加按钮 ===== */
+  .fab-add {
+    position: fixed;
+    bottom: 24px;
+    right: 50%;
+    transform: translateX(240px);
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    box-shadow: var(--shadow-lg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    transition: transform 0.15s;
+  }
+
+  .fab-add:active {
+    transform: translateX(240px) scale(0.92);
+  }
+
+  @media (max-width: 480px) {
+    .fab-add {
+      right: 20px;
+      transform: none;
+    }
+    .fab-add:active {
+      transform: scale(0.92);
+    }
+  }
+
+  /* ===== 表单页面 ===== */
+  .form-page {
+    padding: 16px;
+  }
+
+  .form-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .form-left, .form-right {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .form-section {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid var(--color-border);
+  }
+
+  .form-section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    margin-bottom: 6px;
+  }
+
+  .form-input,
+  .form-select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    color: var(--color-text);
+    background: var(--color-bg);
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-input:focus,
+  .form-select:focus {
+    border-color: var(--color-primary);
+    background: white;
+  }
+
+  .form-input::placeholder {
+    color: var(--color-text-tertiary);
+  }
+
+  /* 图片上传 */
+  .image-upload-area {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    background: var(--color-bg);
+    transition: border-color 0.2s;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .image-upload-area:active {
+    border-color: var(--color-primary);
+  }
+
+  .image-upload-area img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .image-upload-hint {
+    font-size: 13px;
+    color: var(--color-text-tertiary);
+  }
+
+  .image-upload-icon {
+    width: 32px;
+    height: 32px;
+    opacity: 0.3;
+  }
+
+  /* 分类选择 */
+  .category-picker {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .category-option {
+    padding: 10px 8px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    text-align: center;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    background: var(--color-bg);
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .category-option.selected {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+  }
+
+  /* 按钮 */
+  .btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 8px;
+    transition: opacity 0.2s;
+  }
+
+  .btn-primary:active {
+    opacity: 0.9;
+  }
+
+  .btn-danger {
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    color: var(--color-danger);
+    border: 1px solid var(--color-danger);
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 12px;
+  }
+
+  /* ===== 详情页 ===== */
+  .detail-hero {
+    padding: 24px 16px;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    text-align: center;
+  }
+
+  .detail-image {
+    width: 120px;
+    height: 120px;
+    border-radius: var(--radius-xl);
+    background: var(--color-bg);
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .detail-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .detail-name {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .detail-category {
+    display: inline-block;
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 12px;
+    background: rgba(45, 90, 74, 0.1);
+    color: var(--color-primary);
+  }
+
+  .detail-cost-card {
+    margin: 16px;
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-light) 100%);
+    border-radius: var(--radius-xl);
+    padding: 24px 20px;
+    color: white;
+    text-align: center;
+    box-shadow: var(--shadow-md);
+  }
+
+  .detail-cost-label {
+    font-size: 13px;
+    opacity: 0.85;
+    margin-bottom: 4px;
+  }
+
+  .detail-cost-value {
+    font-size: 40px;
+    font-weight: 900;
+    letter-spacing: -1px;
+  }
+
+  .detail-cost-sub {
+    font-size: 13px;
+    opacity: 0.8;
+    margin-top: 8px;
+  }
+
+  .detail-info-grid {
+    margin: 0 16px 16px;
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .info-row:last-child {
+    border-bottom: none;
+  }
+
+  .info-label {
+    font-size: 14px;
+    color: var(--color-text-secondary);
+  }
+
+  .info-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text);
+  }
+
+  .info-value.highlight {
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  .info-value-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .row-edit-btn {
+    padding: 3px 10px;
+    font-size: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--color-primary);
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .row-edit-btn:active {
+    background: rgba(45, 90, 74, 0.1);
+  }
+
+  /* ===== 模态框 ===== */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+  }
+
+  .modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .modal-box {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .modal-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+
+  .modal-group {
+    margin-bottom: 16px;
+  }
+
+  .modal-group label {
+    display: block;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    margin-bottom: 6px;
+  }
+
+  .modal-group input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    color: var(--color-text);
+    background: var(--color-bg);
+    font-family: inherit;
+    outline: none;
+  }
+
+  .modal-group input:focus {
+    border-color: var(--color-primary);
+    background: white;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .modal-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    cursor: pointer;
+    font-family: inherit;
+    border: none;
+  }
+
+  .modal-btn-cancel {
+    background: var(--color-bg);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+  }
+
+  .modal-btn-confirm {
+    background: var(--color-primary);
+    color: white;
+    font-weight: 600;
+  }
+
+  /* ===== 视图切换 ===== */
+  .view {
+    display: none;
+    height: 100%;
+    flex-direction: column;
+  }
+
+  .view.active {
+    display: flex;
+  }
+
+  /* ===== Toast ===== */
+  .toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.75);
+    color: white;
+    padding: 12px 24px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+
+  .toast.show {
+    opacity: 1;
+  }
+
+  /* ===== 滚动条隐藏 ===== */
+  .main-content::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* ===== 桌面端适配 ===== */
+  @media (min-width: 768px) {
+    #app {
+      max-width: 1200px;
+    }
+
+    .navbar {
+      padding: 16px 32px;
+    }
+
+    .navbar-title {
+      font-size: 20px;
+    }
+
+    .stats-overview {
+      padding: 32px 32px 16px;
+    }
+
+    .stats-card {
+      padding: 32px 32px;
+    }
+
+    .stats-value {
+      font-size: 40px;
+    }
+
+    .stat-item-value {
+      font-size: 20px;
+    }
+
+    .filter-toolbar {
+      padding: 16px 32px 8px;
+    }
+
+    .device-list {
+      padding: 16px 32px 100px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .device-card {
+      padding: 20px;
+    }
+
+    .fab-add {
+      right: 32px;
+      bottom: 32px;
+      transform: none;
+    }
+
+    .fab-add:active {
+      transform: scale(0.92);
+    }
+
+    .form-page {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .form-layout {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .form-left {
+      position: sticky;
+      top: 24px;
+    }
+
+    .form-left .form-section {
+      margin-bottom: 0;
+    }
+
+    .form-right .form-section {
+      margin-bottom: 0;
+    }
+
+    #detail-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px 48px;
+    }
+
+    .detail-layout {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    .detail-left {
+      position: sticky;
+      top: 24px;
+    }
+
+    .detail-hero {
+      border-radius: var(--radius-xl);
+      padding: 32px 24px;
+      margin-bottom: 16px;
+    }
+
+    .detail-image {
+      width: 180px;
+      height: 180px;
+      margin-bottom: 20px;
+    }
+
+    .detail-name {
+      font-size: 28px;
+    }
+
+    .detail-cost-card {
+      margin: 0;
+      padding: 36px 24px;
+    }
+
+    .detail-cost-value {
+      font-size: 52px;
+    }
+
+    .detail-right {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .detail-info-grid {
+      margin: 0;
+    }
+
+    .delete-btn-area {
+      padding: 8px 0 16px;
+    }
+
+    .delete-btn-area .btn-danger {
+      margin-top: 0;
+    }
+  }
+
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- ===== 首页视图 ===== -->
+  <div class="view active" id="view-home">
+    <div class="navbar">
+      <div class="navbar-title">资产一本帐</div>
+    </div>
+
+    <div class="main-content">
+      <!-- 统计概览 -->
+      <div class="stats-overview">
+        <div class="stats-card">
+          <div class="stats-label">在役资产</div>
+          <div class="stats-value" id="total-asset-value">¥0</div>
+          <div class="stats-row">
+            <div class="stat-item">
+              <div class="stat-item-label">总花费</div>
+              <div class="stat-item-value" id="active-asset-value">¥0</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-item-label">退役资产</div>
+              <div class="stat-item-value" id="retired-asset-value">¥0</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-item-label">日均成本</div>
+              <div class="stat-item-value" id="avg-daily-cost">¥0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 筛选工具栏 -->
+      <div class="filter-toolbar">
+        <!-- 分类筛选 -->
+        <div class="filter-row" id="category-filter"></div>
+        <!-- 状态筛选 + 排序 -->
+        <div class="sort-bar">
+          <div class="filter-row" style="margin-bottom: 0; flex: 1;">
+            <button class="filter-tab active" data-status="all" onclick="filterStatus('all')">全部状态</button>
+            <button class="filter-tab" data-status="active" onclick="filterStatus('active')">现役中</button>
+            <button class="filter-tab" data-status="retired" onclick="filterStatus('retired')">已退役</button>
+            <button class="filter-tab" data-status="warranty" onclick="filterStatus('warranty')">质保中</button>
+            <button class="filter-tab" data-status="expired" onclick="filterStatus('expired')">已过保</button>
+          </div>
+        </div>
+        <!-- 排序选项 -->
+        <div class="sort-bar" style="padding-top: 4px; justify-content: flex-start;">
+          <span class="sort-label">排序：</span>
+          <div class="sort-options">
+            <button class="sort-btn" data-sort="purchaseDate" onclick="setSort('purchaseDate')">
+              购买时间
+              <span class="sort-arrow" id="arrow-purchaseDate"></span>
+            </button>
+            <button class="sort-btn" data-sort="price" onclick="setSort('price')">
+              购买价格
+              <span class="sort-arrow" id="arrow-price"></span>
+            </button>
+            <button class="sort-btn" data-sort="useDays" onclick="setSort('useDays')">
+              使用天数
+              <span class="sort-arrow" id="arrow-useDays"></span>
+            </button>
+            <button class="sort-btn" data-sort="dailyCost" onclick="setSort('dailyCost')">
+              日均成本
+              <span class="sort-arrow" id="arrow-dailyCost"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 设备列表 -->
+      <div class="device-list" id="device-list"></div>
+    </div>
+
+    <!-- 添加按钮 -->
+    <button class="fab-add" onclick="navigate('add')">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    </button>
+  </div>
+
+  <!-- ===== 添加/编辑设备视图 ===== -->
+  <div class="view" id="view-add">
+    <div class="navbar">
+      <button class="back-btn" onclick="navigate('home')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        返回
+      </button>
+      <div class="navbar-title" id="form-title">添加资产</div>
+      <div style="width: 60px;"></div>
+    </div>
+
+    <div class="main-content">
+      <form class="form-page" id="device-form" onsubmit="return saveDevice(event)">
+        <div class="form-layout">
+          <!-- 左栏：基本信息 -->
+          <div class="form-left">
+            <div class="form-section">
+              <div class="form-section-title">基本信息</div>
+
+              <div class="form-group">
+                <label class="form-label">设备图片</label>
+                <div class="image-upload-area" id="image-upload" onclick="document.getElementById('f-image').click()">
+                  <div id="image-preview-wrap" style="display:none;">
+                    <img id="image-preview" alt="预览">
+                  </div>
+                  <svg class="image-upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                  </svg>
+                  <span class="image-upload-hint">点击上传设备图片</span>
+                </div>
+                <input type="file" id="f-image" accept="image/*" style="display:none" onchange="handleImageUpload(this)">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">设备名称</label>
+                <input type="text" class="form-input" id="f-name" placeholder="例如：iPhone 15 Pro" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">设备分类</label>
+                <div class="category-picker" id="category-picker">
+                  <button type="button" class="category-option" data-value="数码产品">数码产品</button>
+                  <button type="button" class="category-option" data-value="生活运动">生活运动</button>
+                  <button type="button" class="category-option" data-value="衣服鞋包">衣服鞋包</button>
+                  <button type="button" class="category-option" data-value="家具电器">家具电器</button>
+                  <button type="button" class="category-option" data-value="其他">其他</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 右栏：价格和日期 -->
+          <div class="form-right">
+            <div class="form-section">
+              <div class="form-section-title">价格信息</div>
+
+              <div class="form-group">
+                <label class="form-label">购买价格（元）</label>
+                <input type="number" class="form-input" id="f-price" placeholder="0.00" step="0.01" min="0" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">附加费用（维修等，元）</label>
+                <input type="number" class="form-input" id="f-extra-cost" placeholder="0.00" step="0.01" min="0" value="0">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">二手出售/回收收入（元）</label>
+                <input type="number" class="form-input" id="f-resale" placeholder="0.00" step="0.01" min="0" value="0">
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="form-section-title">日期信息</div>
+
+              <div class="form-group">
+                <label class="form-label">购买日期</label>
+                <input type="text" class="form-input" id="f-purchase-date" placeholder="例如：2026.9.19" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">保修到期日期</label>
+                <input type="text" class="form-input" id="f-warranty-date" placeholder="例如：2027.9.19">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">退役日期（留空表示仍在使用）</label>
+                <input type="text" class="form-input" id="f-retire-date" placeholder="例如：2026.9.19">
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary" id="submit-btn">保存设备</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== 设备详情视图 ===== -->
+  <div class="view" id="view-detail">
+    <div class="navbar">
+      <button class="back-btn" onclick="navigate('home')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        返回
+      </button>
+      <div class="navbar-title">设备详情</div>
+      <button class="navbar-action" onclick="editCurrentDevice()">编辑</button>
+    </div>
+
+    <div class="main-content" id="detail-content"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- 编辑附加费用模态框 -->
+<div class="modal-overlay" id="extra-cost-modal">
+  <div class="modal-box">
+    <div class="modal-title">添加附加费用</div>
+    <div class="modal-group">
+      <label>金额（元）</label>
+      <input type="number" id="modal-extra-amount" placeholder="0.00" step="0.01" min="0">
+    </div>
+    <div class="modal-group">
+      <label>备注（选填）</label>
+      <input type="text" id="modal-extra-note" placeholder="例如：换电池">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal('extra-cost-modal')">取消</button>
+      <button class="modal-btn modal-btn-confirm" onclick="saveExtraCost()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 编辑二手出售/回收模态框 -->
+<div class="modal-overlay" id="resale-modal">
+  <div class="modal-box">
+    <div class="modal-title">二手出售/回收</div>
+    <div class="modal-group">
+      <label>金额（元）</label>
+      <input type="number" id="modal-resale-amount" placeholder="0.00" step="0.01" min="0">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal('resale-modal')">取消</button>
+      <button class="modal-btn modal-btn-confirm" onclick="saveResale()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== 数据层 =====
+const STORAGE_KEY = 'device_asset_tracker_v1';
+let devices = [];
+let currentCategoryFilter = '全部';
+let currentStatusFilter = 'all';
+let currentSortField = 'purchaseDate';
+let currentSortOrder = 'desc'; // desc / asc
+let currentDeviceId = null;
+let editingDeviceId = null;
+let selectedCategory = '';
+let uploadedImageData = null;
+let longPressTimer = null;
+let longPressTriggered = false;
+
+// 分类定义
+const CATEGORIES = ['数码产品', '生活运动', '衣服鞋包', '家具电器', '其他'];
+
+// ===== 工具函数 =====
+function formatDate(dateStr) {
+  if (!dateStr) return '-';
+  const d = new Date(dateStr);
+  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+}
+
+function formatMoney(n) {
+  return '¥' + (Math.round(n * 100) / 100).toFixed(2);
+}
+
+function daysBetween(start, end) {
+  const s = new Date(start);
+  const e = end ? new Date(end) : new Date();
+  return Math.max(1, Math.ceil((e - s) / (1000 * 60 * 60 * 24)));
+}
+
+function calculateDevice(device) {
+  const useDays = daysBetween(device.purchaseDate, device.retireDate);
+  const totalCost = (device.price || 0) + (device.extraCost || 0) - (device.resale || 0);
+  const dailyCost = totalCost / useDays;
+  return { useDays, totalCost, dailyCost };
+}
+
+function isWarrantyActive(d) {
+  if (!d.warrantyDate) return false;
+  return new Date(d.warrantyDate) >= new Date();
+}
+
+function isWarrantyExpired(d) {
+  if (!d.warrantyDate) return false;
+  return new Date(d.warrantyDate) < new Date();
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+// 解析用户输入的日期字符串，支持多种格式
+function parseDateStr(str) {
+  if (!str || !str.trim()) return '';
+  str = str.trim();
+
+  // 统一分隔符为 . 然后分割
+  // 支持：2026.9.19 / 2026-9-19 / 2026/9/19 / 2026年9月19日
+  const normalized = str.replace(/[年\/\-]/g, '.').replace(/[月日]/g, '.');
+  const parts = normalized.split('.').filter(p => p.trim() !== '');
+
+  if (parts.length === 3) {
+    const y = parseInt(parts[0]);
+    const m = parseInt(parts[1]);
+    const d = parseInt(parts[2]);
+    if (isNaN(y) || isNaN(m) || isNaN(d)) return '';
+    if (y < 1900 || y > 2100) return '';
+    if (m < 1 || m > 12) return '';
+    // 验证具体月份的天数
+    const daysInMonth = new Date(y, m, 0).getDate();
+    if (d < 1 || d > daysInMonth) return '';
+    return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  }
+
+  // 如果只有年月
+  if (parts.length === 2) {
+    const y = parseInt(parts[0]);
+    const m = parseInt(parts[1]);
+    if (isNaN(y) || isNaN(m)) return '';
+    if (y < 1900 || y > 2100) return '';
+    if (m < 1 || m > 12) return '';
+    return `${y}-${String(m).padStart(2, '0')}-01`;
+  }
+
+  return '';
+}
+
+// 将 ISO 日期格式化为用户友好的显示格式（用于输入框）
+function formatDateForInput(isoDate) {
+  if (!isoDate) return '';
+  const d = new Date(isoDate);
+  if (isNaN(d.getTime())) return '';
+  return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()}`;
+}
+
+// ===== 数据持久化（IndexedDB） =====
+const DB_NAME = 'asset_tracker_db';
+const DB_VERSION = 1;
+const STORE_NAME = 'devices';
+let db = null;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+      }
+    };
+    request.onsuccess = (e) => { db = e.target.result; resolve(db); };
+    request.onerror = (e) => reject(e);
+  });
+}
+
+async function loadDevices() {
+  try {
+    await openDB();
+    await new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const request = store.getAll();
+      request.onsuccess = () => {
+        devices = request.result || [];
+        // 如果 IndexedDB 是空的，从 localStorage 迁移
+        if (devices.length === 0) {
+          const legacy = localStorage.getItem(STORAGE_KEY);
+          if (legacy) {
+            devices = JSON.parse(legacy);
+            // 迁移到 IndexedDB
+            const tx2 = db.transaction(STORE_NAME, 'readwrite');
+            const store2 = tx2.objectStore(STORE_NAME);
+            devices.forEach(d => store2.put(d));
+          }
+        }
+        resolve();
+      };
+      request.onerror = () => { devices = []; resolve(); };
+    });
+  } catch(e) {
+    // 降级到 localStorage
+    try {
+      const data = localStorage.getItem(STORAGE_KEY);
+      devices = data ? JSON.parse(data) : [];
+    } catch(e) {
+      devices = [];
+    }
+  }
+}
+
+async function saveDevices() {
+  try {
+    await openDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      store.clear();
+      devices.forEach(d => store.put(d));
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => {
+        showToast('存储空间不足，请删除部分设备');
+        resolve();
+      };
+    });
+  } catch(e) {
+    // 降级到 localStorage
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(devices));
+    } catch(e) {
+      showToast('存储空间不足，请删除部分设备');
+    }
+  }
+}
+
+// ===== 路由 =====
+function navigate(view, params = {}) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+
+  if (view === 'home') {
+    renderHome();
+  } else if (view === 'add') {
+    if (params.id) {
+      editingDeviceId = params.id;
+      loadDeviceToForm(params.id);
+      document.getElementById('form-title').textContent = '编辑资产';
+      document.getElementById('submit-btn').textContent = '保存修改';
+    } else {
+      editingDeviceId = null;
+      resetForm();
+      document.getElementById('form-title').textContent = '添加设备';
+      document.getElementById('submit-btn').textContent = '保存设备';
+    }
+  } else if (view === 'detail') {
+    currentDeviceId = params.id;
+    renderDetail();
+  }
+  window.scrollTo(0, 0);
+}
+
+// ===== 首页渲染 =====
+function renderHome() {
+  // 统计
+  const activeDevices = devices.filter(d => !d.retireDate);
+  const retiredDevices = devices.filter(d => d.retireDate);
+  const activeAsset = activeDevices.reduce((sum, d) => sum + (d.price || 0), 0);
+  const retiredAsset = retiredDevices.reduce((sum, d) => sum + (d.price || 0), 0);
+  const totalAsset = activeAsset + retiredAsset;
+
+  let totalDaily = 0;
+  activeDevices.forEach(d => {
+    const calc = calculateDevice(d);
+    totalDaily += calc.dailyCost;
+  });
+
+  document.getElementById('total-asset-value').textContent = formatMoney(activeAsset);
+  document.getElementById('active-asset-value').textContent = formatMoney(totalAsset);
+  document.getElementById('retired-asset-value').textContent = formatMoney(retiredAsset);
+  document.getElementById('avg-daily-cost').textContent = formatMoney(totalDaily);
+
+  // 分类筛选标签
+  const catEl = document.getElementById('category-filter');
+  const categories = ['全部', ...CATEGORIES];
+  catEl.innerHTML = categories.map(cat =>
+    `<button class="filter-tab ${currentCategoryFilter === cat ? 'active' : ''}" onclick="filterCategory('${cat}')">${cat}</button>`
+  ).join('');
+
+  // 状态筛选按钮 active 状态
+  document.querySelectorAll('[data-status]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.status === currentStatusFilter);
+  });
+
+  // 排序按钮 active 状态和箭头
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.sort === currentSortField);
+  });
+  updateSortArrows();
+
+  // 筛选 + 排序设备列表
+  let list = [...devices];
+
+  // 分类筛选
+  if (currentCategoryFilter !== '全部') {
+    list = list.filter(d => d.category === currentCategoryFilter);
+  }
+
+  // 状态筛选
+  if (currentStatusFilter === 'active') {
+    list = list.filter(d => !d.retireDate);
+  } else if (currentStatusFilter === 'retired') {
+    list = list.filter(d => d.retireDate);
+  } else if (currentStatusFilter === 'warranty') {
+    list = list.filter(d => isWarrantyActive(d));
+  } else if (currentStatusFilter === 'expired') {
+    list = list.filter(d => isWarrantyExpired(d));
+  }
+
+  // 排序
+  list.sort((a, b) => {
+    let valA, valB;
+    if (currentSortField === 'purchaseDate') {
+      valA = new Date(a.purchaseDate || 0).getTime();
+      valB = new Date(b.purchaseDate || 0).getTime();
+    } else if (currentSortField === 'price') {
+      valA = a.price || 0;
+      valB = b.price || 0;
+    } else if (currentSortField === 'useDays') {
+      valA = calculateDevice(a).useDays;
+      valB = calculateDevice(b).useDays;
+    } else if (currentSortField === 'dailyCost') {
+      valA = calculateDevice(a).dailyCost;
+      valB = calculateDevice(b).dailyCost;
+    }
+    if (currentSortOrder === 'desc') {
+      return valB - valA;
+    } else {
+      return valA - valB;
+    }
+  });
+
+  // 设备列表渲染
+  const listEl = document.getElementById('device-list');
+
+  if (list.length === 0) {
+    listEl.innerHTML = `
+      <div class="empty-state">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+        </svg>
+        <div class="empty-title">没有匹配的设备</div>
+        <div class="empty-desc">调整筛选条件，或添加新的设备</div>
+      </div>
+    `;
+    return;
+  }
+
+  listEl.innerHTML = list.map(d => {
+    const calc = calculateDevice(d);
+    const isActive = !d.retireDate;
+    return `
+      <div class="device-card" data-id="${d.id}"
+           onclick="onCardClick('${d.id}')"
+           ontouchstart="onCardTouchStart(event, '${d.id}')"
+           ontouchend="onCardTouchEnd()"
+           ontouchmove="onCardTouchMove()">
+        <div class="device-thumb">
+          ${d.imageData
+            ? `<img src="${d.imageData}" alt="${escapeHtml(d.name)}">`
+            : `<svg class="device-thumb-placeholder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                <line x1="12" y1="18" x2="12.01" y2="18"></line>
+              </svg>`
+          }
+        </div>
+        <div class="device-info">
+          <div class="device-top-row">
+            <div class="device-name-area">
+              <div class="device-name">${escapeHtml(d.name)}</div>
+              <span class="device-category-badge">${d.category}</span>
+            </div>
+            <span class="device-status ${isActive ? 'status-active' : 'status-retired'}">${isActive ? '在役' : '已退役'}</span>
+          </div>
+          <div class="device-bottom-row">
+            <div class="cost-area">
+              <span class="device-cost">${formatMoney(d.price || 0)} <span style="color: var(--color-text-tertiary); font-size: 14px; font-weight: 400;">${formatMoney(calc.dailyCost)}/天</span></span>
+            </div>
+            <div class="days-area">
+              <span class="device-days">${calc.useDays}天</span>
+              <span class="device-days-label">使用天数</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateSortArrows() {
+  const fields = ['purchaseDate', 'price', 'useDays', 'dailyCost'];
+  fields.forEach(f => {
+    const arrow = document.getElementById('arrow-' + f);
+    if (!arrow) return;
+    if (f === currentSortField) {
+      arrow.textContent = currentSortOrder === 'desc' ? '↓' : '↑';
+    } else {
+      arrow.textContent = '';
+    }
+  });
+}
+
+function filterCategory(cat) {
+  currentCategoryFilter = cat;
+  renderHome();
+}
+
+function filterStatus(status) {
+  currentStatusFilter = status;
+  renderHome();
+}
+
+function setSort(field) {
+  if (currentSortField === field) {
+    // 切换排序方向
+    currentSortOrder = currentSortOrder === 'desc' ? 'asc' : 'desc';
+  } else {
+    currentSortField = field;
+    currentSortOrder = 'desc';
+  }
+  renderHome();
+}
+
+// ===== 长按删除 =====
+function onCardTouchStart(e, id) {
+  longPressTriggered = false;
+  const card = e.currentTarget;
+  longPressTimer = setTimeout(() => {
+    longPressTriggered = true;
+    card.classList.add('long-pressed');
+    showToast('长按：再次确认删除');
+    setTimeout(() => {
+      card.classList.remove('long-pressed');
+      if (longPressTriggered) {
+        confirmDeleteDevice(id);
+      }
+    }, 800);
+  }, 800);
+}
+
+function onCardTouchEnd() {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+  }
+}
+
+function onCardTouchMove() {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+  }
+}
+
+function onCardClick(id) {
+  if (longPressTriggered) {
+    longPressTriggered = false;
+    return;
+  }
+  navigate('detail', { id: id });
+}
+
+function confirmDeleteDevice(id) {
+  if (!confirm('确定要删除这个设备吗？此操作不可恢复。')) return;
+  devices = devices.filter(d => d.id !== id);
+  saveDevices();
+  showToast('设备已删除');
+  renderHome();
+}
+
+// ===== 表单 =====
+function resetForm() {
+  document.getElementById('device-form').reset();
+  document.getElementById('f-extra-cost').value = '0';
+  document.getElementById('f-resale').value = '0';
+  const today = new Date();
+  document.getElementById('f-purchase-date').value = formatDateForInput(today.toISOString().split('T')[0]);
+  // 保修到期日期默认一年后
+  const nextYear = new Date(today);
+  nextYear.setFullYear(nextYear.getFullYear() + 1);
+  document.getElementById('f-warranty-date').value = formatDateForInput(nextYear.toISOString().split('T')[0]);
+  uploadedImageData = null;
+  document.getElementById('image-preview-wrap').style.display = 'none';
+  document.getElementById('image-preview').src = '';
+  selectedCategory = '';
+  updateCategoryPicker();
+}
+
+function loadDeviceToForm(id) {
+  const d = devices.find(x => x.id === id);
+  if (!d) return;
+  document.getElementById('f-name').value = d.name || '';
+  document.getElementById('f-price').value = d.price || '';
+  document.getElementById('f-extra-cost').value = d.extraCost || 0;
+  document.getElementById('f-resale').value = d.resale || 0;
+  document.getElementById('f-purchase-date').value = formatDateForInput(d.purchaseDate);
+  document.getElementById('f-warranty-date').value = formatDateForInput(d.warrantyDate);
+  document.getElementById('f-retire-date').value = formatDateForInput(d.retireDate);
+  selectedCategory = d.category || '';
+  uploadedImageData = d.imageData || null;
+
+  if (uploadedImageData) {
+    document.getElementById('image-preview-wrap').style.display = 'block';
+    document.getElementById('image-preview').src = uploadedImageData;
+  } else {
+    document.getElementById('image-preview-wrap').style.display = 'none';
+  }
+  updateCategoryPicker();
+}
+
+function updateCategoryPicker() {
+  document.querySelectorAll('.category-option').forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.value === selectedCategory);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.category-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedCategory = btn.dataset.value;
+      updateCategoryPicker();
+    });
+  });
+});
+
+function handleImageUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      // 压缩图片：最大宽度 400px，JPEG 质量 0.7
+      const maxWidth = 400;
+      let width = img.width;
+      let height = img.height;
+      if (width > maxWidth) {
+        height = Math.round(height * (maxWidth / width));
+        width = maxWidth;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      uploadedImageData = canvas.toDataURL('image/jpeg', 0.7);
+      document.getElementById('image-preview-wrap').style.display = 'block';
+      document.getElementById('image-preview').src = uploadedImageData;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveDevice(e) {
+  e.preventDefault();
+  if (!selectedCategory) {
+    showToast('请选择设备分类');
+    return false;
+  }
+
+  const purchaseDate = parseDateStr(document.getElementById('f-purchase-date').value);
+  if (!purchaseDate) {
+    showToast('购买日期格式不正确，例如：2026.9.19');
+    return false;
+  }
+
+  const warrantyDate = parseDateStr(document.getElementById('f-warranty-date').value);
+  const retireDate = parseDateStr(document.getElementById('f-retire-date').value);
+
+  // 验证保修日期晚于购买日期
+  if (warrantyDate && warrantyDate <= purchaseDate) {
+    showToast('保修到期日期应晚于购买日期');
+    return false;
+  }
+
+  // 验证退役日期晚于购买日期
+  if (retireDate && retireDate <= purchaseDate) {
+    showToast('退役日期应晚于购买日期');
+    return false;
+  }
+
+  const data = {
+    name: document.getElementById('f-name').value.trim(),
+    category: selectedCategory,
+    price: parseFloat(document.getElementById('f-price').value) || 0,
+    extraCost: parseFloat(document.getElementById('f-extra-cost').value) || 0,
+    resale: parseFloat(document.getElementById('f-resale').value) || 0,
+    purchaseDate: purchaseDate,
+    warrantyDate: warrantyDate,
+    retireDate: retireDate,
+    imageData: uploadedImageData
+  };
+
+  if (editingDeviceId) {
+    const idx = devices.findIndex(d => d.id === editingDeviceId);
+    if (idx >= 0) {
+      devices[idx] = { ...devices[idx], ...data };
+    }
+    showToast('设备已更新');
+  } else {
+    data.id = 'dev_' + Date.now();
+    data.createdAt = new Date().toISOString();
+    devices.push(data);
+    showToast('设备已添加');
+  }
+
+  saveDevices();
+  navigate('home');
+  return false;
+}
+
+// ===== 详情页 =====
+function renderDetail() {
+  const d = devices.find(x => x.id === currentDeviceId);
+  if (!d) {
+    navigate('home');
+    return;
+  }
+
+  const calc = calculateDevice(d);
+  const isActive = !d.retireDate;
+  const warrantyRemaining = d.warrantyDate
+    ? Math.ceil((new Date(d.warrantyDate) - new Date()) / (1000 * 60 * 60 * 24))
+    : null;
+
+  const el = document.getElementById('detail-content');
+  el.innerHTML = `
+    <div class="detail-layout">
+      <div class="detail-left">
+        <div class="detail-hero">
+          <div class="detail-image">
+            ${d.imageData
+              ? `<img src="${d.imageData}" alt="${escapeHtml(d.name)}">`
+              : `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="opacity:0.3">
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                  <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                </svg>`
+            }
+          </div>
+          <div class="detail-name">${escapeHtml(d.name)}</div>
+          <span class="detail-category">${d.category}</span>
+        </div>
+
+        <div class="detail-cost-card">
+          <div class="detail-cost-label">日均成本</div>
+          <div class="detail-cost-value">${formatMoney(calc.dailyCost)}</div>
+          <div class="detail-cost-sub">已使用 ${calc.useDays} 天 · 总成本 ${formatMoney(calc.totalCost)}</div>
+        </div>
+      </div>
+
+      <div class="detail-right">
+        <div class="detail-info-grid">
+          <div class="info-row">
+            <span class="info-label">购买价格</span>
+            <span class="info-value">${formatMoney(d.price || 0)}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">附加费用（维修等）</span>
+            <span class="info-value-row">
+              <span class="info-value">${formatMoney(d.extraCost || 0)}</span>
+              <button class="row-edit-btn" onclick="openExtraCostModal()">编辑</button>
+            </span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">二手出售/回收</span>
+            <span class="info-value-row">
+              <span class="info-value">${formatMoney(d.resale || 0)}</span>
+              <button class="row-edit-btn" onclick="openResaleModal()">编辑</button>
+            </span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">总投入成本</span>
+            <span class="info-value highlight">${formatMoney(calc.totalCost)}</span>
+          </div>
+        </div>
+
+        <div class="detail-info-grid">
+          <div class="info-row">
+            <span class="info-label">购买日期</span>
+            <span class="info-value">${formatDate(d.purchaseDate)}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">使用状态</span>
+            <span class="info-value">${isActive ? '在役' : '已退役'}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">使用天数</span>
+            <span class="info-value highlight">${calc.useDays} 天</span>
+          </div>
+          ${d.retireDate ? `
+          <div class="info-row">
+            <span class="info-label">退役日期</span>
+            <span class="info-value">${formatDate(d.retireDate)}</span>
+          </div>` : ''}
+        </div>
+
+        <div class="detail-info-grid">
+          <div class="info-row">
+            <span class="info-label">保修到期</span>
+            <span class="info-value ${warrantyRemaining !== null && warrantyRemaining < 0 ? '' : 'highlight'}">
+              ${d.warrantyDate ? formatDate(d.warrantyDate) : '未设置'}
+            </span>
+          </div>
+          ${warrantyRemaining !== null ? `
+          <div class="info-row">
+            <span class="info-label">保修状态</span>
+            <span class="info-value" style="color: ${warrantyRemaining > 0 ? 'var(--color-success)' : 'var(--color-danger)'}">
+              ${warrantyRemaining > 0 ? `剩余 ${warrantyRemaining} 天` : '已过保'}
+            </span>
+          </div>` : ''}
+        </div>
+
+        <div class="delete-btn-area">
+          <button class="btn-danger" onclick="deleteDevice('${d.id}')">删除此设备</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function editCurrentDevice() {
+  navigate('add', { id: currentDeviceId });
+}
+
+function deleteDevice(id) {
+  if (!confirm('确定要删除这个设备吗？此操作不可恢复。')) return;
+  devices = devices.filter(d => d.id !== id);
+  saveDevices();
+  showToast('设备已删除');
+  navigate('home');
+}
+
+// ===== 快捷编辑模态框 =====
+function openExtraCostModal() {
+  const d = devices.find(x => x.id === currentDeviceId);
+  if (!d) return;
+  document.getElementById('modal-extra-amount').value = d.extraCost || 0;
+  document.getElementById('modal-extra-note').value = d.extraNote || '';
+  document.getElementById('extra-cost-modal').classList.add('show');
+}
+
+function openResaleModal() {
+  const d = devices.find(x => x.id === currentDeviceId);
+  if (!d) return;
+  document.getElementById('modal-resale-amount').value = d.resale || 0;
+  document.getElementById('resale-modal').classList.add('show');
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).classList.remove('show');
+}
+
+function saveExtraCost() {
+  const amount = parseFloat(document.getElementById('modal-extra-amount').value) || 0;
+  const note = document.getElementById('modal-extra-note').value.trim();
+  const d = devices.find(x => x.id === currentDeviceId);
+  if (!d) return;
+  d.extraCost = amount;
+  d.extraNote = note;
+  saveDevices();
+  closeModal('extra-cost-modal');
+  renderDetail();
+  showToast('附加费用已更新');
+}
+
+function saveResale() {
+  const amount = parseFloat(document.getElementById('modal-resale-amount').value) || 0;
+  const d = devices.find(x => x.id === currentDeviceId);
+  if (!d) return;
+  d.resale = amount;
+  saveDevices();
+  closeModal('resale-modal');
+  renderDetail();
+  showToast('回收金额已更新');
+}
+
+// ===== 工具 =====
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+// ===== 初始化 =====
+async function init() {
+  await loadDevices();
+  renderHome();
+}
+init();
+
+// 让整个页面都能滚轮滚动（包括左右空白区域）
+document.addEventListener('wheel', (e) => {
+  const activeView = document.querySelector('.view.active .main-content');
+  if (activeView) {
+    activeView.scrollTop += e.deltaY;
+    e.preventDefault();
+  }
+}, { passive: false });
+</script>
+
+</body>
+</html>
