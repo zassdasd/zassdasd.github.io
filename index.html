@@ -11,6 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="资产一本帐">
 <title>资产一本帐</title>
 <link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
   /* ===== 设计变量 ===== */
   :root {
@@ -1397,7 +1398,57 @@ function openDB() {
   });
 }
 
+// ===== 云端同步（Supabase） =====
+const SUPABASE_URL = 'https://jfurgzuksxlywijakuy.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_4j3dX1grCjzrPwPQGSs6dQ_DIHOcbSJ';
+const APP_EMAIL = 'me@asset.app';
+const APP_PASSWORD = 'Asset123456';
+let supabase = null;
+
+async function ensureCloud() {
+  if (supabase) return supabase;
+  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    await supabase.auth.signInWithPassword({ email: APP_EMAIL, password: APP_PASSWORD });
+  }
+  return supabase;
+}
+
+function rowToDevice(r) {
+  return {
+    id: r.id,
+    name: r.name,
+    category: r.category,
+    price: Number(r.price) || 0,
+    extraCost: Number(r.extra_cost) || 0,
+    resale: Number(r.resale) || 0,
+    purchaseDate: r.purchase_date,
+    warrantyDate: r.warranty_date || '',
+    retireDate: r.retire_date || '',
+    imageData: r.image_data || null,
+    extraNote: r.extra_note || ''
+  };
+}
+
+function deviceToRow(d) {
+  return {
+    id: d.id,
+    name: d.name,
+    category: d.category,
+    price: d.price || 0,
+    extra_cost: d.extraCost || 0,
+    resale: d.resale || 0,
+    purchase_date: d.purchaseDate,
+    warranty_date: d.warrantyDate || null,
+    retire_date: d.retireDate || null,
+    image_data: d.imageData || null,
+    extra_note: d.extraNote || null
+  };
+}
+
 async function loadDevices() {
+  // 1) 先读本地缓存（离线也能用）
   try {
     await openDB();
     await new Promise((resolve) => {
@@ -1406,12 +1457,10 @@ async function loadDevices() {
       const request = store.getAll();
       request.onsuccess = () => {
         devices = request.result || [];
-        // 如果 IndexedDB 是空的，从 localStorage 迁移
         if (devices.length === 0) {
           const legacy = localStorage.getItem(STORAGE_KEY);
           if (legacy) {
             devices = JSON.parse(legacy);
-            // 迁移到 IndexedDB
             const tx2 = db.transaction(STORE_NAME, 'readwrite');
             const store2 = tx2.objectStore(STORE_NAME);
             devices.forEach(d => store2.put(d));
@@ -1422,37 +1471,53 @@ async function loadDevices() {
       request.onerror = () => { devices = []; resolve(); };
     });
   } catch(e) {
-    // 降级到 localStorage
     try {
       const data = localStorage.getItem(STORAGE_KEY);
       devices = data ? JSON.parse(data) : [];
-    } catch(e) {
-      devices = [];
-    }
+    } catch(e) { devices = []; }
+  }
+  // 2) 再从云端拉取，云端为准
+  try {
+    await ensureCloud();
+    const { data, error } = await supabase.from('devices').select('*');
+    if (error) throw error;
+    devices = (data || []).map(rowToDevice);
+    await openDB();
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const store = tx.objectStore(STORE_NAME);
+    store.clear();
+    devices.forEach(d => store.put(d));
+  } catch(e) {
+    // 云端不可用时静默使用本地缓存
   }
 }
 
 async function saveDevices() {
+  // 1) 写本地
   try {
     await openDB();
-    return new Promise((resolve) => {
+    await new Promise((resolve) => {
       const tx = db.transaction(STORE_NAME, 'readwrite');
       const store = tx.objectStore(STORE_NAME);
       store.clear();
       devices.forEach(d => store.put(d));
       tx.oncomplete = () => resolve();
-      tx.onerror = () => {
-        showToast('存储空间不足，请删除部分设备');
-        resolve();
-      };
+      tx.onerror = () => { showToast('存储空间不足，请删除部分设备'); resolve(); };
     });
   } catch(e) {
-    // 降级到 localStorage
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(devices));
-    } catch(e) {
-      showToast('存储空间不足，请删除部分设备');
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(devices)); } catch(e) {}
+  }
+  // 2) 推到云端
+  try {
+    await ensureCloud();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase.from('devices').delete().eq('user_id', user.id);
+    if (devices.length) {
+      await supabase.from('devices').upsert(devices.map(deviceToRow));
     }
+  } catch(e) {
+    showToast('云端同步失败，稍后会自动重试');
   }
 }
 
